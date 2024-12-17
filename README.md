@@ -3,7 +3,7 @@
 [![](https://img.shields.io/nuget/dt/soenneker.hashing.slhdsa.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.hashing.slhdsa/)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Hashing.Slhdsa
-### A utility library for SLH-DSA hashing and verification
+### A utility library for SLH-DSA post-quantum hashing and verification
 
 A compact and lightweight library for **SLH-DSA (Stateless Hash-Based Digital Signature Algorithm)**, a post-quantum cryptographic standard providing robust security against classical and quantum attacks. SLH-DSA uses hash-based cryptography to ensure secure key generation, message signing, and signature verification.
 
