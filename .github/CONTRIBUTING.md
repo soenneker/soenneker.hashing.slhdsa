@@ -1,4 +1,4 @@
-# Contributing to Soenneker.Hashing.Slhdsa
+﻿# Contributing to Soenneker.Hashing.Slhdsa
 
 We're excited that you're interested in contributing!
 
