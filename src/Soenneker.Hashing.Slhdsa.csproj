@@ -43,6 +43,6 @@
 
     <ItemGroup>
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.1" />
-        <PackageReference Include="Soenneker.Extensions.String" Version="3.0.531" />
+        <PackageReference Include="Soenneker.Extensions.String" Version="3.0.532" />
     </ItemGroup>
 </Project>
