@@ -1,18 +1,17 @@
 using AwesomeAssertions;
-using Soenneker.Tests.FixturedUnit;
-using Xunit;
+using Soenneker.Tests.HostedUnit;
 
 
 namespace Soenneker.Hashing.Slhdsa.Tests;
 
-[Collection("Collection")]
-public class SlhDsaHashingUtilTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class SlhDsaHashingUtilTests : HostedUnitTest
 {
-    public SlhDsaHashingUtilTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public SlhDsaHashingUtilTests(Host host) : base(host)
     {
     }
 
-    [Fact]
+    [Test]
     public void GenerateKeyPair_ShouldReturnValidKeys()
     {
         // Act
@@ -24,7 +23,7 @@ public class SlhDsaHashingUtilTests : FixturedUnitTest
         privateKey.Should().NotBe(publicKey, "private and public keys should be different");
     }
 
-    [Fact]
+    [Test]
     public void SignMessage_ShouldReturnValidSignature()
     {
         // Arrange
@@ -39,7 +38,7 @@ public class SlhDsaHashingUtilTests : FixturedUnitTest
         signature.Should().NotBe(message, "signature should not match the original message");
     }
 
-    [Fact]
+    [Test]
     public void VerifySignature_ValidSignature_ShouldReturnTrue()
     {
         // Arrange
@@ -54,7 +53,7 @@ public class SlhDsaHashingUtilTests : FixturedUnitTest
         isValid.Should().BeTrue("valid signature should be verified successfully");
     }
 
-    [Fact]
+    [Test]
     public void VerifySignature_InvalidSignature_ShouldReturnFalse()
     {
         // Arrange
@@ -71,7 +70,7 @@ public class SlhDsaHashingUtilTests : FixturedUnitTest
         isValid.Should().BeFalse("invalid signature should not be verified");
     }
 
-    [Fact]
+    [Test]
     public void VerifySignature_WithModifiedMessage_ShouldReturnFalse()
     {
         // Arrange
