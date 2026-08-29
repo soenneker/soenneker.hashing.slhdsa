@@ -23,6 +23,7 @@ public static class SlhDsaHashingUtil
     /// <summary>
     /// Generates a new SLH-DSA key pair.
     /// </summary>
+    /// <param name="parameterType">Parameter Type for the generate key pair operation.</param>
     /// <returns>Tuple containing the private and public keys as Base64 strings.</returns>
     [Pure]
     public static (string PrivateKey, string PublicKey) GenerateKeyPair(SlhDsaParameterType parameterType = SlhDsaParameterType.SLH_DSA_SHAKE_128F)
@@ -35,6 +36,7 @@ public static class SlhDsaHashingUtil
     /// <summary>
     /// Generates a new SLH-DSA key pair.
     /// </summary>
+    /// <param name="slhDsaParameters">Slh Dsa Parameters for the generate key pair operation.</param>
     /// <returns>Tuple containing the private and public keys as Base64 strings.</returns>
     [Pure]
     public static (string PrivateKey, string PublicKey) GenerateKeyPair(SlhDsaParameters slhDsaParameters)
