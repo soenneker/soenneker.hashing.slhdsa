@@ -10,11 +10,12 @@ using Soenneker.Hashing.Slhdsa.Enums;
 using System.Reflection;
 using System.Diagnostics.Contracts;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 
 namespace Soenneker.Hashing.Slhdsa;
 
 /// <summary>
-/// A utility library for SLH-DSA hashing and verification
+/// Generates SLH-DSA keys, signs UTF-8 messages, and verifies signatures.
 /// </summary>
 public static class SlhDsaHashingUtil
 {
@@ -25,7 +26,6 @@ public static class SlhDsaHashingUtil
     /// </summary>
     /// <param name="parameterType">Parameter Type for the generate key pair operation.</param>
     /// <returns>Tuple containing the private and public keys as Base64 strings.</returns>
-    [Pure]
     public static (string PrivateKey, string PublicKey) GenerateKeyPair(SlhDsaParameterType parameterType = SlhDsaParameterType.SLH_DSA_SHAKE_128F)
     {
         SlhDsaParameters slhDsaParameters = GetParametersFromEnum(parameterType);
@@ -38,7 +38,6 @@ public static class SlhDsaHashingUtil
     /// </summary>
     /// <param name="slhDsaParameters">Slh Dsa Parameters for the generate key pair operation.</param>
     /// <returns>Tuple containing the private and public keys as Base64 strings.</returns>
-    [Pure]
     public static (string PrivateKey, string PublicKey) GenerateKeyPair(SlhDsaParameters slhDsaParameters)
     {
         var secureRandom = new SecureRandom();
@@ -67,7 +66,6 @@ public static class SlhDsaHashingUtil
     /// <param name="privateKeyBase64">The private key in Base64 format.</param>
     /// <param name="parameterType"></param>
     /// <returns>The signature as a Base64 string.</returns>
-    [Pure]
     public static string SignMessage(string message, string privateKeyBase64, SlhDsaParameterType parameterType = SlhDsaParameterType.SLH_DSA_SHAKE_128F)
     {
         return SignMessage(message, privateKeyBase64, GetFormalNameForParameter(parameterType));
@@ -80,22 +78,29 @@ public static class SlhDsaHashingUtil
     /// <param name="privateKeyBase64">The private key in Base64 format.</param>
     /// <param name="parameterType"></param>
     /// <returns>The signature as a Base64 string.</returns>
-    [Pure]
     public static string SignMessage(string message, string privateKeyBase64, string parameterType)
     {
-        // Deserialize private key from Base64
-        AsymmetricKeyParameter? privateKey = PrivateKeyFactory.CreateKey(privateKeyBase64.ToBytesFromBase64());
-
-        // Initialize the signer
-        ISigner? signer = SignerUtilities.GetSigner(parameterType);
-        signer.Init(true, privateKey);
-
-        // Sign the message
+        byte[] privateKeyBytes = privateKeyBase64.ToBytesFromBase64();
         byte[] messageBytes = message.ToBytes();
-        signer.BlockUpdate(messageBytes, 0, messageBytes.Length);
-        byte[] signature = signer.GenerateSignature();
+        byte[] signature = [];
 
-        return signature.ToBase64String();
+        try
+        {
+            AsymmetricKeyParameter privateKey = PrivateKeyFactory.CreateKey(privateKeyBytes);
+            ISigner signer = SignerUtilities.GetSigner(parameterType);
+            signer.Init(true, privateKey);
+
+            signer.BlockUpdate(messageBytes, 0, messageBytes.Length);
+            signature = signer.GenerateSignature();
+
+            return signature.ToBase64String();
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(privateKeyBytes);
+            CryptographicOperations.ZeroMemory(messageBytes);
+            CryptographicOperations.ZeroMemory(signature);
+        }
     }
 
     /// <summary>
@@ -109,19 +114,40 @@ public static class SlhDsaHashingUtil
     [Pure]
     public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64, string parameterType)
     {
-        AsymmetricKeyParameter? publicKey = PublicKeyFactory.CreateKey(publicKeyBase64.ToBytesFromBase64());
+        if (message is null || signatureBase64 is null || publicKeyBase64 is null || parameterType is null || signatureBase64.Length > 150_000 ||
+            publicKeyBase64.Length > 4096 || parameterType.Length > 64)
+        {
+            return false;
+        }
 
-        ISigner? signer = SignerUtilities.GetSigner(parameterType);
+        byte[] publicKeyBytes = [];
+        byte[] messageBytes = [];
+        byte[] signature = [];
 
-        signer.Init(false, publicKey);
+        try
+        {
+            publicKeyBytes = publicKeyBase64.ToBytesFromBase64();
+            AsymmetricKeyParameter publicKey = PublicKeyFactory.CreateKey(publicKeyBytes);
+            ISigner signer = SignerUtilities.GetSigner(parameterType);
+            signer.Init(false, publicKey);
 
-        // Verify the signature
-        byte[] messageBytes = message.ToBytes();
-        signer.BlockUpdate(messageBytes, 0, messageBytes.Length);
+            messageBytes = message.ToBytes();
+            signer.BlockUpdate(messageBytes, 0, messageBytes.Length);
 
-        byte[] signature = signatureBase64.ToBytesFromBase64();
+            signature = signatureBase64.ToBytesFromBase64();
 
-        return signer.VerifySignature(signature);
+            return signer.VerifySignature(signature);
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(publicKeyBytes);
+            CryptographicOperations.ZeroMemory(messageBytes);
+            CryptographicOperations.ZeroMemory(signature);
+        }
     }
 
     /// <summary>

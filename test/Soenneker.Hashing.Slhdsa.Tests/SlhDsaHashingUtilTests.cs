@@ -85,4 +85,12 @@ public class SlhDsaHashingUtilTests : HostedUnitTest
         // Assert
         isValid.Should().BeFalse("signature should not verify if the message is altered");
     }
+
+    [Test]
+    public void VerifySignature_MalformedInputs_ShouldReturnFalse()
+    {
+        bool isValid = SlhDsaHashingUtil.VerifySignature("message", "not-base64", "not-base64");
+
+        isValid.Should().BeFalse();
+    }
 }
