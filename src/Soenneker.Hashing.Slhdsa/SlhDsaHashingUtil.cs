@@ -123,6 +123,7 @@ public static class SlhDsaHashingUtil
     /// <param name="message">The original message.</param>
     /// <param name="signatureBase64">The signature in Base64 format.</param>
     /// <param name="publicKeyBase64">The public key in Base64 format.</param>
+    /// <param name="parameterType">The SLH-DSA parameter type.</param>
     /// <returns>True if the signature is valid; otherwise, false.</returns>
     [Pure]
     public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64, string parameterType)
@@ -169,7 +170,6 @@ public static class SlhDsaHashingUtil
     /// <param name="message">The original message.</param>
     /// <param name="signatureBase64">The signature in Base64 format.</param>
     /// <param name="publicKeyBase64">The public key in Base64 format.</param>
-    /// <param name="parameterType"></param>
     /// <returns>True if the signature is valid; otherwise, false.</returns>
     [Pure]
     public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64) =>
