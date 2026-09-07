@@ -24,9 +24,15 @@ public static class SlhDsaHashingUtil
     /// <summary>
     /// Generates a new SLH-DSA key pair.
     /// </summary>
+    /// <returns>Tuple containing the private and public keys as Base64 strings.</returns>
+    public static (string PrivateKey, string PublicKey) GenerateKeyPair() => GenerateKeyPair(SlhDsaParameterType.SLH_DSA_SHAKE_128F);
+
+    /// <summary>
+    /// Generates a new SLH-DSA key pair.
+    /// </summary>
     /// <param name="parameterType">Parameter Type for the generate key pair operation.</param>
     /// <returns>Tuple containing the private and public keys as Base64 strings.</returns>
-    public static (string PrivateKey, string PublicKey) GenerateKeyPair(SlhDsaParameterType parameterType = SlhDsaParameterType.SLH_DSA_SHAKE_128F)
+    public static (string PrivateKey, string PublicKey) GenerateKeyPair(SlhDsaParameterType parameterType)
     {
         SlhDsaParameters slhDsaParameters = GetParametersFromEnum(parameterType);
 
@@ -64,11 +70,19 @@ public static class SlhDsaHashingUtil
     /// </summary>
     /// <param name="message">The message to sign.</param>
     /// <param name="privateKeyBase64">The private key in Base64 format.</param>
-    /// <param name="parameterType"></param>
     /// <returns>The signature as a Base64 string.</returns>
-    public static string SignMessage(string message, string privateKeyBase64, SlhDsaParameterType parameterType = SlhDsaParameterType.SLH_DSA_SHAKE_128F)
+    public static string SignMessage(string message, string privateKeyBase64) => SignMessage(message, privateKeyBase64, SlhDsaParameterType.SLH_DSA_SHAKE_128F);
+
+    /// <summary>
+    /// Signs a message using the provided SLH-DSA private key.
+    /// </summary>
+    /// <param name="message">The message to sign.</param>
+    /// <param name="privateKeyBase64">The private key in Base64 format.</param>
+    /// <param name="parameterType">The SLH-DSA parameter type.</param>
+    /// <returns>The signature as a Base64 string.</returns>
+    public static string SignMessage(string message, string privateKeyBase64, SlhDsaParameterType parameterType)
     {
-        return SignMessage(message, privateKeyBase64, GetFormalNameForParameter(parameterType));
+        return SignMessage(message, privateKeyBase64, parameterType.Value);
     }
 
     /// <summary>
@@ -109,7 +123,6 @@ public static class SlhDsaHashingUtil
     /// <param name="message">The original message.</param>
     /// <param name="signatureBase64">The signature in Base64 format.</param>
     /// <param name="publicKeyBase64">The public key in Base64 format.</param>
-    /// <param name="parameterType"></param>
     /// <returns>True if the signature is valid; otherwise, false.</returns>
     [Pure]
     public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64, string parameterType)
@@ -159,9 +172,21 @@ public static class SlhDsaHashingUtil
     /// <param name="parameterType"></param>
     /// <returns>True if the signature is valid; otherwise, false.</returns>
     [Pure]
-    public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64, SlhDsaParameterType parameterType = SlhDsaParameterType.SLH_DSA_SHAKE_128F)
+    public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64) =>
+        VerifySignature(message, signatureBase64, publicKeyBase64, SlhDsaParameterType.SLH_DSA_SHAKE_128F);
+
+    /// <summary>
+    /// Verifies a signature against a message using the provided SLH-DSA public key.
+    /// </summary>
+    /// <param name="message">The original message.</param>
+    /// <param name="signatureBase64">The signature in Base64 format.</param>
+    /// <param name="publicKeyBase64">The public key in Base64 format.</param>
+    /// <param name="parameterType">The SLH-DSA parameter type.</param>
+    /// <returns>True if the signature is valid; otherwise, false.</returns>
+    [Pure]
+    public static bool VerifySignature(string message, string signatureBase64, string publicKeyBase64, SlhDsaParameterType parameterType)
     {
-        return VerifySignature(message, signatureBase64, publicKeyBase64, GetFormalNameForParameter(parameterType));
+        return VerifySignature(message, signatureBase64, publicKeyBase64, parameterType.Value);
     }
 
     private static SlhDsaParameters GetParametersFromEnum(SlhDsaParameterType parameterType)
@@ -169,7 +194,7 @@ public static class SlhDsaHashingUtil
         // Use or add the parameter to the cache
         return _parametersCache.GetOrAdd(parameterType, key =>
         {
-            string parameterName = key.ToString().ToLowerInvariantFast();
+            string parameterName = key.Name.ToLowerInvariantFast();
 
             // Reflectively retrieve the field
             FieldInfo? fieldInfo = typeof(SlhDsaParameters).GetField(parameterName, BindingFlags.Public | BindingFlags.Static);
@@ -181,8 +206,4 @@ public static class SlhDsaHashingUtil
         });
     }
 
-    private static string GetFormalNameForParameter(SlhDsaParameterType parameterType)
-    {
-        return parameterType.ToString().Replace("_", "-");
-    }
 }
