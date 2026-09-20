@@ -7,9 +7,7 @@ using Soenneker.Extensions.String;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using Soenneker.Hashing.Slhdsa.Enums;
-using System.Reflection;
 using System.Diagnostics.Contracts;
-using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace Soenneker.Hashing.Slhdsa;
@@ -19,8 +17,6 @@ namespace Soenneker.Hashing.Slhdsa;
 /// </summary>
 public static class SlhDsaHashingUtil
 {
-    private static readonly ConcurrentDictionary<SlhDsaParameterType, SlhDsaParameters> _parametersCache = new();
-
     /// <summary>
     /// Generates a new SLH-DSA key pair.
     /// </summary>
@@ -191,19 +187,33 @@ public static class SlhDsaHashingUtil
 
     private static SlhDsaParameters GetParametersFromEnum(SlhDsaParameterType parameterType)
     {
-        // Use or add the parameter to the cache
-        return _parametersCache.GetOrAdd(parameterType, key =>
+        return parameterType.Name switch
         {
-            string parameterName = key.Name.ToLowerInvariantFast();
-
-            // Reflectively retrieve the field
-            FieldInfo? fieldInfo = typeof(SlhDsaParameters).GetField(parameterName, BindingFlags.Public | BindingFlags.Static);
-
-            if (fieldInfo == null)
-                throw new ArgumentException($"Invalid SLH-DSA parameter type: {parameterName}");
-
-            return (SlhDsaParameters) fieldInfo.GetValue(null)!;
-        });
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_128S) => SlhDsaParameters.slh_dsa_sha2_128s,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_128S) => SlhDsaParameters.slh_dsa_shake_128s,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_128F) => SlhDsaParameters.slh_dsa_sha2_128f,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_128F) => SlhDsaParameters.slh_dsa_shake_128f,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_192S) => SlhDsaParameters.slh_dsa_sha2_192s,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_192S) => SlhDsaParameters.slh_dsa_shake_192s,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_192F) => SlhDsaParameters.slh_dsa_sha2_192f,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_192F) => SlhDsaParameters.slh_dsa_shake_192f,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_256S) => SlhDsaParameters.slh_dsa_sha2_256s,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_256S) => SlhDsaParameters.slh_dsa_shake_256s,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_256F) => SlhDsaParameters.slh_dsa_sha2_256f,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_256F) => SlhDsaParameters.slh_dsa_shake_256f,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_128S_WITH_SHA256) => SlhDsaParameters.slh_dsa_sha2_128s_with_sha256,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_128S_WITH_SHAKE128) => SlhDsaParameters.slh_dsa_shake_128s_with_shake128,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_128F_WITH_SHA256) => SlhDsaParameters.slh_dsa_sha2_128f_with_sha256,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_128F_WITH_SHAKE128) => SlhDsaParameters.slh_dsa_shake_128f_with_shake128,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_192S_WITH_SHA512) => SlhDsaParameters.slh_dsa_sha2_192s_with_sha512,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_192S_WITH_SHAKE256) => SlhDsaParameters.slh_dsa_shake_192s_with_shake256,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_192F_WITH_SHA512) => SlhDsaParameters.slh_dsa_sha2_192f_with_sha512,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_192F_WITH_SHAKE256) => SlhDsaParameters.slh_dsa_shake_192f_with_shake256,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_256S_WITH_SHA512) => SlhDsaParameters.slh_dsa_sha2_256s_with_sha512,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_256S_WITH_SHAKE256) => SlhDsaParameters.slh_dsa_shake_256s_with_shake256,
+            nameof(SlhDsaParameterType.SLH_DSA_SHA2_256F_WITH_SHA512) => SlhDsaParameters.slh_dsa_sha2_256f_with_sha512,
+            nameof(SlhDsaParameterType.SLH_DSA_SHAKE_256F_WITH_SHAKE256) => SlhDsaParameters.slh_dsa_shake_256f_with_shake256,
+            _ => throw new ArgumentException($"Invalid SLH-DSA parameter type: {parameterType.Name}", nameof(parameterType))
+        };
     }
-
 }
